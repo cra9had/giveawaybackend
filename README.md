@@ -1,0 +1,1 @@
+Запуск бота - python manage.py start_telegram_bot
