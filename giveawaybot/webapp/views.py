@@ -13,7 +13,7 @@ from drf_spectacular.utils import (
 
 @extend_schema(
     tags=["TelegramUsers"],
-    methods=["POST", "GET", "PUT", "PATCH", "DELETE"],
+    methods=["GET"],
 )
 @extend_schema_view(
     post=extend_schema(
@@ -23,11 +23,12 @@ from drf_spectacular.utils import (
 class TelegramUserViewSet(viewsets.ModelViewSet):
     queryset = TelegramUser.objects.all()
     serializer_class = TelegramUserSerializer
+    http_method_names = ['get']
 
 
 @extend_schema(
     tags=["Giveaway"],
-    methods=["POST", "GET", "PUT", "PATCH", "DELETE"],
+    methods=["POST", "GET"],
 )
 @extend_schema_view(
     post=extend_schema(
@@ -37,6 +38,7 @@ class TelegramUserViewSet(viewsets.ModelViewSet):
 class GiveAwayViewSet(viewsets.ModelViewSet):
     queryset = GiveAway.objects.all()
     serializer_class = GiveAwaySerializer
+    http_method_names = ['get', 'post']
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -48,7 +50,7 @@ class GiveAwayViewSet(viewsets.ModelViewSet):
 
 @extend_schema(
     tags=["Ticket"],
-    methods=["POST", "GET", "PUT", "PATCH", "DELETE"],
+    methods=["POST"],
 )
 @extend_schema_view(
     post=extend_schema(
@@ -58,6 +60,7 @@ class GiveAwayViewSet(viewsets.ModelViewSet):
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
+    http_method_names = ['post']
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

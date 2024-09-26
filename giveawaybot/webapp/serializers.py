@@ -15,7 +15,25 @@ class GiveAwaySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GiveAway
-        fields = ("title", "description", "image", "create_date", "start_date", "winners_count")
+        fields = (
+            "title",
+            "description",
+            "image",
+            "create_date",
+            "end_datetime",
+            "winners_count",
+            "is_referral_system",
+            "referral_invites_count"
+        )
+
+    def validate(self, data):
+        # Проверяем, выбрана ли реферальная система
+        if data.get('is_referral_system') and data.get('referral_invites_count') is None:
+            raise serializers.ValidationError(
+                "Выберите количество друзей, которое должен "
+                "пригласить участник для получения билета розыгрыша."
+            )
+        return data
 
 
 class TicketSerializer(serializers.ModelSerializer):

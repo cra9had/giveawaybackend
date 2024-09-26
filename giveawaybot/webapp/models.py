@@ -19,8 +19,10 @@ class GiveAway(models.Model):
     description = models.CharField(verbose_name="Описание", max_length=254)
     image = models.ImageField(verbose_name="Изображение", upload_to="images/%Y/%m/", blank=True, null=True)
     create_date = models.DateField(verbose_name="Дата создания")
-    start_date = models.DateField(verbose_name="Дата начала")
+    end_datetime = models.DateTimeField(verbose_name="Время завершения розыгрыша")
     winners_count = models.IntegerField(verbose_name="Количество призовых мест")
+    is_referral_system = models.BooleanField(verbose_name="Реферальная система", default=False)
+    referral_invites_count = models.IntegerField(verbose_name="Количество приглашений", null=True, blank=True)
 
     def __str__(self):
         return self.title
