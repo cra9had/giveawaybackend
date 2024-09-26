@@ -14,6 +14,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'rest_framework',
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
+
     'bot',
     'webapp',
 ]
@@ -90,7 +95,26 @@ USE_I18N = True
 
 USE_TZ = True
 
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
 
-STATIC_URL = 'static/'
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Giveaway Bot",
+    "DESCRIPTION": "Find what you need",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
+}
+
+
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "collected_static"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
