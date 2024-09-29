@@ -1,9 +1,11 @@
 from rest_framework import viewsets
-from .models import TelegramUser, GiveAway, Ticket
-from .serializers import TelegramUserSerializer, GiveAwaySerializer, TicketSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
+from django.shortcuts import get_object_or_404
+
+from .models import TelegramUser, GiveAway, Ticket
+from .serializers import TelegramUserSerializer, GiveAwaySerializer, TicketSerializer
 
 from drf_spectacular.utils import (
     # OpenApiParameter,
@@ -45,6 +47,7 @@ class GiveAwayViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -65,24 +68,15 @@ class TicketViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='join/(?P<giveaway_id>[^/.]+)')
     def join_giveaway(self, request, giveaway_id=None):
-        """Метод выдачи билета участнику"""
-        try:
-            giveaway = GiveAway.objects.get(id=giveaway_id)
-            participant_id = request.data.get("participant_id")
-            participant = TelegramUser.objects.get(id=participant_id)
+        """Метод для присоединения участника к розыгрышу и выдачи билета"""
+        giveaway = get_object_or_404(GiveAway, id=giveaway_id)
+        participant_id = request.data.get("participant_id")
+        participant = get_object_or_404(TelegramUser, id=participant_id)
 
-            # Проверяем, есть ли уже билет у участника для данного розыгрыша
-            existing_ticket = Ticket.objects.filter(giveaway=giveaway, participant=participant).first()
-            if existing_ticket:
-                return Response({"error": "Participant has already joined this giveaway."},
-                                status=status.HTTP_400_BAD_REQUEST)
+        existing_ticket = Ticket.objects.filter(giveaway=giveaway, participant=participant).first()
+        if existing_ticket:
+            return Response({"error": "Участник уже присоединился к этому розыгрышу."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-            # Создаем новый билет
-            ticket = Ticket.create_ticket(giveaway=giveaway, participant=participant)
-            return Response({"ticket_number": ticket.number_ticket}, status=status.HTTP_201_CREATED)
-        except GiveAway.DoesNotExist:
-            return Response({"error": "Giveaway not found."}, status=status.HTTP_404_NOT_FOUND)
-        except TelegramUser.DoesNotExist:
-            return Response({"error": "Participant not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        # TODO: Дорабоать
+        ticket = Ticket.create_ticket(giveaway=giveaway, participant=participant)
+        return Response({"ticket_number": ticket.number_ticket}, status=status.HTTP_201_CREATED)

@@ -12,6 +12,7 @@ class TelegramUserSerializer(serializers.ModelSerializer):
 
 class GiveAwaySerializer(serializers.ModelSerializer):
     """Сериализатор для модели GiveAway"""
+    invite_link = serializers.SerializerMethodField()
 
     class Meta:
         model = GiveAway
@@ -23,7 +24,8 @@ class GiveAwaySerializer(serializers.ModelSerializer):
             "end_datetime",
             "winners_count",
             "is_referral_system",
-            "referral_invites_count"
+            "referral_invites_count",
+            "invite_link",
         )
 
     def validate(self, data):
@@ -34,6 +36,13 @@ class GiveAwaySerializer(serializers.ModelSerializer):
                 "пригласить участник для получения билета розыгрыша."
             )
         return data
+
+    def get_invite_link(self, obj):
+        request = self.context.get('request')
+        if request is None:
+            return None
+        # TODO: Примерный вид сформированной ссылки на созданный розыгрыш
+        return request.build_absolute_uri(f"/giveaways/{obj.pk}/")
 
 
 class TicketSerializer(serializers.ModelSerializer):
