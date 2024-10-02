@@ -1,20 +1,73 @@
+import hashlib
+
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+from .manager import TelegramUserManager
 
 
-class TelegramUser(models.Model):
-    """Модель пользователя"""
+class TelegramUser(AbstractUser):
+    """Модель Telegram пользователя"""
+
+    username, password, email = None, None, None
+    USERNAME_FIELD = "telegram_id"
+
+    REQUIRED_FIELDS = [
+        "chat_id",
+    ]
+
+    objects = TelegramUserManager()
+
     telegram_id = models.CharField(max_length=128, unique=True)
+    chat_id = models.CharField(max_length=128)
     is_bot = models.BooleanField(default=False)
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
-    username = models.CharField(max_length=128, null=True, blank=True)
+
+    @classmethod
+    def encode_chat_id(cls, string: str) -> str:
+        """
+        Hashing chat_id with sha512 algorythm
+        @param string:
+        @return: hashed chat_id
+        """
+        hash_string = hashlib.sha512(string.encode("utf-8"))
+        return hash_string.hexdigest()
+
+    def set_chat_id(self, string: str) -> None:
+        """
+        @param string: new chat_id
+        @return: None
+        """
+        self.chat_id = self.encode_chat_id(string)
+
+    def check_chat_id(self, string: str) -> bool:
+        """
+        Check string is equal to chat_id
+        @param string:
+        @return: chat_id is valid
+        """
+        return self.encode_chat_id(string) == self.chat_id
 
     def __str__(self):
-        return self.username or self.telegram_id
+        if self.first_name or self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        return f"Telegram user, id: {self.telegram_id}"
+
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
 
 
 class GiveAway(models.Model):
     """Модель розыгрыша"""
+    STATUS_CHOICES = [
+        ('created', 'Создан'),
+        ('in_progress', 'В процессе'),
+        ('end', 'Закончен'),
+    ]
+
+    chat_id = models.CharField(max_length=128)
     title = models.CharField(verbose_name="Название", max_length=100)
     description = models.CharField(verbose_name="Описание", max_length=254)
     image = models.ImageField(verbose_name="Изображение", upload_to="images/%Y/%m/", blank=True, null=True)
@@ -23,9 +76,14 @@ class GiveAway(models.Model):
     winners_count = models.IntegerField(verbose_name="Количество призовых мест")
     is_referral_system = models.BooleanField(verbose_name="Реферальная система", default=False)
     referral_invites_count = models.IntegerField(verbose_name="Количество приглашений", null=True, blank=True)
+    status = models.CharField(verbose_name="Статус", max_length=20, choices=STATUS_CHOICES, default='created')
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        verbose_name = "Розыгрыш"
+        verbose_name_plural = "Розыгрыши"
 
 
 class Ticket(models.Model):
@@ -35,11 +93,15 @@ class Ticket(models.Model):
     create_date = models.DateField(verbose_name="Дата создания")
     number_ticket = models.IntegerField(verbose_name="Номер тикета")
 
-    def __str__(self):
-        return f"Ticket {self.number_ticket} for {self.participant.username}"
-
     @classmethod
     def create_ticket(cls, giveaway, participant):
         """Создание нового билета"""
         ticket_number = cls.objects.filter(giveaway=giveaway).count() + 1
         return cls.objects.create(giveaway=giveaway, participant=participant, number_ticket=ticket_number)
+
+    def __str__(self):
+        return f"Ticket {self.number_ticket} for {self.participant.username}"
+
+    class Meta:
+        verbose_name = "Билет"
+        verbose_name_plural = "Билеты"
