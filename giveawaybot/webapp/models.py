@@ -1,5 +1,3 @@
-import hashlib
-
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -24,34 +22,7 @@ class TelegramUser(AbstractUser):
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128)
 
-    @classmethod
-    def encode_chat_id(cls, string: str) -> str:
-        """
-        Hashing chat_id with sha512 algorythm
-        @param string:
-        @return: hashed chat_id
-        """
-        hash_string = hashlib.sha512(string.encode("utf-8"))
-        return hash_string.hexdigest()
-
-    def set_chat_id(self, string: str) -> None:
-        """
-        @param string: new chat_id
-        @return: None
-        """
-        self.chat_id = self.encode_chat_id(string)
-
-    def check_chat_id(self, string: str) -> bool:
-        """
-        Check string is equal to chat_id
-        @param string:
-        @return: chat_id is valid
-        """
-        return self.encode_chat_id(string) == self.chat_id
-
     def __str__(self):
-        if self.first_name or self.last_name:
-            return f"{self.first_name} {self.last_name}"
         return f"Telegram user, id: {self.telegram_id}"
 
     class Meta:

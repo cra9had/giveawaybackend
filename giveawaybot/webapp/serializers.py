@@ -14,26 +14,9 @@ class TelegramUserSerializer(serializers.ModelSerializer):
 
     chat_id = serializers.CharField(required=True, write_only=True, max_length=128)
 
-    def create(self, validated_data):
-        try:
-            user = TelegramUser.objects.create_user(**validated_data)
-        except ValueError as error:
-            raise SerializerError(error) from error
-
-        self.instance = user
-        return user
-
-    def get_instance(self, request):
-        return request.user
-
     class Meta:
         model = TelegramUser
-        fields = (
-            "telegram_id",
-            "chat_id",
-            "first_name",
-            "last_name",
-        )
+        fields = ['telegram_id', 'first_name', 'last_name', 'chat_id']
 
 
 class UserLoginSerializer(serializers.ModelSerializer):

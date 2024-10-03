@@ -1,10 +1,10 @@
-from django.contrib.auth.backends import ModelBackend
 from django.core.exceptions import ValidationError
+from rest_framework.authentication import BaseAuthentication
 
 from .models import TelegramUser
 
 
-class TelegramAuthBackend(ModelBackend):
+class TelegramAuthBackend(BaseAuthentication):
     """Telegram Authentication"""
 
     def authenticate(self, request, telegram_id=None, chat_id=None, **kwargs) -> TelegramUser | None:
