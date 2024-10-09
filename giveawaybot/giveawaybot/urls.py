@@ -9,6 +9,8 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+from webapp.views import test_template
+
 app_name = "giveaway"
 
 urlpatterns = [
@@ -25,6 +27,7 @@ urlpatterns = [
          SpectacularRedocView.as_view(url_name="schema"),
          name="redoc",
      ),
+    path("", test_template)
 ]
 
 

@@ -1,0 +1,329 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta name="description" content=" PS store , PS Plus Essential " />
+
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="PS store" />
+
+    <meta property="og:image" content="./assets/images/2.png" />
+    <meta property="og:image:width" content="1200" />
+
+    <meta property="og:image:height" content="630" />
+    <title>PS store</title>
+    <link rel="stylesheet" href="{% static '/assets/style/main.css' %}" />
+    <!-- Link Swiper's CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+    />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  </head>
+  <body class="dark_mode">
+    <div class="mode">
+      <div class="layout">
+        <!-- heading input-->
+        <div class="heading_group">
+          <div class="heading_items">
+            <div class="heading_search">
+              <img src="{% static 'assets/icons/search.svg' %}" alt="" />
+              <label class="w-100">
+                <input
+                  type="text"
+                  placeholder="Найти игру или подписку"
+                  class="heading_search_input w-100"
+                  id="search"
+                />
+              </label>
+            </div>
+            <div class="heading_boxes">
+              <a href="/cart" class="heading_box heading_1 relative">
+                <img
+                  class="dark_mode_icon"
+                  src="{% static 'assets/icons/cart.svg' %}"
+                  alt=""
+                />
+                <img
+                  class="white_mode_icon"
+                  src="{% static 'assets/icons/black_cart.svg' %}"
+                  alt=""
+                />
+                  {% if cart %}
+                <span class="cart_have_icon">{{ cart.total_length }}</span>
+                  {% endif %}
+              </a>
+              <a href="/profile" class="heading_box heading_2">
+                <img
+                  class="dark_mode_icon"
+                  src="{% static 'assets/icons/user.svg' %}"
+                  alt=""
+                />
+                <img
+                  class="white_mode_icon"
+                  src="{% static 'assets/icons/black_user.svg' %}"
+                  alt=""
+                />
+              </a>
+            </div>
+          </div>
+          <div class="founded_items">
+            <div class="not_found_items">
+              <div class="nothing_found">Игра не найдена</div>
+<!--              <div class="found_items_title">Сейчас ищут</div>-->
+<!--              <div class="founded_item">-->
+<!--                <a href="single.html" class="leader_card">-->
+<!--                  <img src="{% static 'assets/images/yura.png' %}" alt="" />-->
+<!--                  <div class="leader_card_texts">-->
+<!--                    <div class="leader_card_title">-->
+<!--                      Jurassic World Evolution 2-->
+<!--                    </div>-->
+<!--                    <div class="leader_card_topic">Ultimate</div>-->
+<!--                  </div>-->
+<!--                  <div class="leader_prices">-->
+<!--                    <div style="display: flex">-->
+<!--                      <div class="price-sale">-85%</div>-->
+<!--                    </div>-->
+<!--                    <div class="leaders_discounts">-->
+<!--                      <div class="leader_price">385 ₽</div>-->
+<!--                      <div class="leader_discount_price">385 ₽</div>-->
+<!--                    </div>-->
+<!--                  </div>-->
+<!--                </a>-->
+<!--              </div>-->
+            </div>
+            <!--             if found-->
+            <div class="found_items">
+              <div class="founded_item">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="body_group">
+          <!--         carousel group-->
+          <div class="carousel_group">
+            <div class="swiper mySwiper">
+              <div class="swiper-wrapper">
+                {% for selection in selections %}
+                <div class="swiper-slide">
+                  <a href="/game_selection/{{selection.pk}}">
+                    <img src="{{selection.image.url}}" alt="" />
+                  </a>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          <div class="leader_sells {% if not blocks.0.is_even %} new_sells {% endif %}">
+
+            <div class="main_title">{{ blocks.0.name }}</div>
+            <div class="leaders_carousel">
+              <div class="swiper leader_swiper">
+                <div class="swiper-wrapper">
+                  {% for game in blocks.0.games.all %}
+                  <div class="swiper-slide">
+                    <a href="game_details/{{ game.pk }}">
+                      <div class="leader_card">
+                        <img src="{{game.get_image_url}}" alt="" />
+                        <div class="leader_card_texts">
+                          <div class="leader_card_title">
+                              {{ game.concept.title }}
+                          </div>
+                          <div class="leader_card_topic">{{ game.edition }}</div>
+                        </div>
+                        <div class="leader_prices">
+                            {% if game.discount %}
+                            <div style="display: flex">
+                              <div class="price-sale">-{{ game.discount }}%</div>
+                            </div>
+                            {% endif %}
+                        <div class="leaders_discounts">
+                            <div class="leader_price">{{ game.price }} ₽</div>
+                          </div>
+
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--subscription_group-->
+          <div class="subscription_group">
+            <div class="main_title">Подписки PS Plus</div>
+            <div class="tabs_group">
+              <div class="tab_item active_tab" id="tab1">1 месяц</div>
+              <div class="tab_item" id="tab2">3 месяца</div>
+              <div class="tab_item" id="tab3">12 месяцев</div>
+            </div>
+            <div class="product_list">
+              <a href="subscriptions/essential/1" class="product_list_item" id="subscription-essential">
+                <img src="{% static 'assets/images/essential.png' %}" alt="" />
+                <div class="product_list_item_texts">
+                  <div class="product_list_item_price">{{ settings.subscriptions.ps_plus_essential.1_month }} ₽</div>
+                  <div class="product_list_item_description">
+                    PS Plus Essential
+                  </div>
+                </div>
+              </a>
+              <a href="subscriptions/extra/1" class="product_list_item" id="subscription-extra">
+                <img src="{% static 'assets/images/extra.png' %}" alt="" />
+                <div class="product_list_item_texts">
+                  <div class="product_list_item_price">{{ settings.subscriptions.ps_plus_extra.1_month }} ₽</div>
+                  <div class="product_list_item_description">PS Plus Extra</div>
+                </div>
+              </a>
+              <a href="subscriptions/deluxe/1" class="product_list_item" id="subscription-deluxe">
+                <img src="{% static 'assets/images/deluxe.png' %}" alt="" />
+                <div class="product_list_item_texts">
+                  <div class="product_list_item_price">{{ settings.subscriptions.ps_plus_deluxe.1_month}} ₽</div>
+                  <div class="product_list_item_description">
+                    PS Plus Deluxe
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+          <!--subscription_group-->
+          <div class="subscription_group">
+            <div class="main_title">Подписки EA Play</div>
+            <div class="product_list">
+              <a href="/subscriptions/ea-play/1" class="product_list_item">
+                <img src="{% static 'assets/images/play.png' %}" alt="" />
+                <div class="product_list_item_texts">
+                  <div class="product_list_item_price">{{ settings.subscriptions.ea_play.1_month }} ₽</div>
+                  <div class="product_list_item_description">EA Play</div>
+                </div>
+              </a>
+              <a href="/subscriptions/ea-play/2" class="product_list_item">
+                <img src="{% static 'assets/images/play3.png' %}" alt="" />
+                <div class="product_list_item_texts">
+                  <div class="product_list_item_price">{{ settings.subscriptions.ea_play.3_month }} ₽</div>
+                  <div class="product_list_item_description">EA Play</div>
+                </div>
+              </a>
+              <a href="/subscriptions/ea-play/3" class="product_list_item">
+                <img src="{% static 'assets/images/play12.png' %}" alt="" />
+                <div class="product_list_item_texts">
+                  <div class="product_list_item_price">{{ settings.subscriptions.ea_play.12_month }} ₽</div>
+                  <div class="product_list_item_description">EA Play</div>
+                </div>
+              </a>
+            </div>
+          </div>
+            <!-- Блоки -->
+          {% for block in blocks %}
+          {% if not forloop.first %}
+
+          {% if forloop.counter == 5 %}
+      <div class="leader_sells">
+        <div class="main_title">Донат</div>
+       <div class="leaders_carousel">
+          <div class="swiper leader_swiper">
+              <div class="swiper-wrapper">
+          {% for selection in donates %}
+                <div class="swiper-slide">
+                  <a href="/game_selection/{{selection.pk}}">
+                    <div class="leader_card">
+                    <img src="{{selection.image.url}}" alt="" /></div>
+                  </a>
+                </div>
+          {% endfor %}
+          </div>
+        </div>
+       </div>
+      </div>
+          {% endif %}
+          <div class="leader_sells {% if not block.is_even %} new_sells {% endif %}">
+            <div class="main_title">{{ block.name }}</div>
+            <div class="leaders_carousel">
+              <div class="swiper leader_swiper">
+                <div class="swiper-wrapper">
+                  {% for game in block.games.all %}
+                  <div class="swiper-slide">
+                    <a href="game_details/{{ game.pk }}">
+                      <div class="leader_card">
+                        <img src="{{game.get_image_url}}" alt="" />
+                        <div class="leader_card_texts">
+                          <div class="leader_card_title">
+                              {{ game.concept.title }}
+                          </div>
+                          <div class="leader_card_topic">{{ game.edition }}</div>
+                        </div>
+                        <div class="leader_prices">
+                            {% if game.discount %}
+                            <div style="display: flex">
+                              <div class="price-sale">-{{ game.discount }}%</div>
+                            </div>
+                            {% endif %}
+                        <div class="leaders_discounts">
+                            <div class="leader_price">{{ game.price }} ₽</div>
+                          </div>
+
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+          <!--          <a href="cart.html" class="cart_added btn main_cart_btn"-->
+          <!--            >Перейти в корзину</a-->
+          <!--          >-->
+        </div>
+        <a href="https://t.me/BackdoorHelper" class="support_btn">
+          <img src="{% static 'assets/icons/support.svg' %}" alt="" />
+        </a>
+      </div>
+    </div>
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+      AOS.init();
+    </script>
+
+    <script>
+
+      function sendAuthData() {
+        const tg = window.Telegram.WebApp;
+        const initData = tg.initData;
+        const initDataUnsafe = tg.initDataUnsafe;
+
+        fetch('/api/auth/telegram/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(initDataUnsafe)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                alert('Auth working')
+            } else {
+                alert('Auth not working')
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+      sendAuthData()
+    </script>
+  </body>
+</html>

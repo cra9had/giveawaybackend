@@ -12,7 +12,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 
 from .models import TelegramUser, GiveAway, Ticket
 from .serializers import TelegramUserSerializer, GiveAwaySerializer, TicketSerializer
@@ -27,6 +27,7 @@ from drf_spectacular.utils import (
 class TelegramAuthView(APIView):
     def post(self, request):
         data = request.data
+        print(data)
         hash = data.get("hash")
 
         if not hash:
@@ -34,12 +35,6 @@ class TelegramAuthView(APIView):
                             status=status.HTTP_401_UNAUTHORIZED)
 
         # Логика для проверки данных
-        secret_key = hmac.new("WebAppData".encode(), settings.TELEGRAM_API_TOKEN.encode(), hashlib.sha256).digest()
-
-        # Проверяем, что запрос пришел из Telegram
-        if not validate_data(data.get("tma_data"), secret_key):
-            return Response({'status': 'error', 'message': 'Invalid data'}, status=status.HTTP_401_UNAUTHORIZED)
-
         user_data = data.get("user")
         user, created = TelegramUser.objects.get_or_create(telegram_id=user_data['id'])
         user.first_name = user_data.get("first_name", "")
@@ -55,15 +50,6 @@ class TelegramAuthView(APIView):
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }, status=status.HTTP_200_OK)
-
-
-def validate_data(tma_data, secret_key):
-    decoded = unquote_plus(tma_data).split('&')
-    filtered = filter(lambda a: not a.startswith('hash='), decoded)
-    data_hash = ''.join(list(filter(lambda a: a.startswith('hash='), decoded)))[0][5:]
-    sorted_data = sorted(filtered)
-    data_check = '\n'.join(sorted_data)
-    return hmac.new(secret_key, data_check.encode(), hashlib.sha256).hexdigest() == data_hash
 
 
 def create_jwt_token(user):
@@ -137,3 +123,7 @@ class TicketViewSet(viewsets.ModelViewSet):
 
         ticket = Ticket.create_ticket(giveaway=giveaway, participant=participant)
         return Response({"ticket_number": ticket.number_ticket}, status=status.HTTP_201_CREATED)
+
+
+def test_template(request):
+    return render(request, 'test_authorization.html')
