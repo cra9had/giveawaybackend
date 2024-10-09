@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
+from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 
@@ -21,7 +22,7 @@ class TelegramAuthView(TokenObtainPairView):
     serializer_class = TelegramUserSerializer
 
     def post(self, request):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         response_data = serializer.validated_data
         return Response(response_data, status=status.HTTP_200_OK)
@@ -70,3 +71,7 @@ class TicketViewSet(viewsets.ModelViewSet):
 
         ticket = Ticket.create_ticket(giveaway=giveaway, participant=participant)
         return Response({"ticket_number": ticket.number_ticket}, status=status.HTTP_201_CREATED)
+
+
+def test_template(request):
+    return render(request, 'test_authorization.html')

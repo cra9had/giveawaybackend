@@ -14,24 +14,24 @@ from .models import TelegramUser, GiveAway, Ticket
 class TelegramUserSerializer(serializers.Serializer):
     """Сериализатор для модели TelegramUser"""
 
-    def validate(self, request):
-        data = request.data
+    def validate(self, _):
+        data = self.context.get('request').data
         hash = data.get("hash")
         user = data.get("user")
         auth_date = data.get("auth_date")
-        telegram_id = user.get("telegram_id")
+        telegram_id = user.get("id")
 
         if not hash:
             raise serializers.ValidationError("Authentication failed")
-
+        print(telegram_id)
         try:
             user = TelegramUser.objects.get(telegram_id=telegram_id)
         except TelegramUser.DoesNotExist:
             raise serializers.ValidationError("User not found")
-
+        print(user)
         refresh = RefreshToken.for_user(user)
         access = refresh.access_token
-
+        print(refresh, access)
         return {
             "refresh_token": str(refresh),
             "access_token": str(access),

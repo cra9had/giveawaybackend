@@ -12,7 +12,7 @@ SECRET_KEY = 'django-insecure-36nt6!59sj72ja1et83-x(7)007fucunbkniuys%y4k@*jt9*f
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -46,7 +46,7 @@ ROOT_URLCONF = 'giveawaybot.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR/'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -143,5 +143,7 @@ STATIC_ROOT = BASE_DIR / "collected_static"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+TELEGRAM_API_TOKEN = "6816633334:AAEgUsxvavRzoVcIcZI_guesK-h_6NCJ5Vs"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
