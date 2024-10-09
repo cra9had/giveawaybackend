@@ -8,20 +8,16 @@ class TelegramAuthBackend(BaseAuthentication):
     """Telegram Authentication"""
 
     def authenticate(self, request):
-        telegram_id = request.data.get('telegram_id')
-        chat_id = request.data.get('chat_id')
+        telegram_id = request.data.get('user', {}).get('id')
 
-        if not telegram_id or not chat_id:
+        if not telegram_id:
             return None
 
         try:
             telegram_user = TelegramUser.objects.get(telegram_id=telegram_id)
-            if telegram_user.chat_id == chat_id:
-                return telegram_user
-            raise AuthenticationFailed("Chat id is incorrect")
-
+            return telegram_user, None
         except TelegramUser.DoesNotExist:
-            raise AuthenticationFailed("Telegram user not found")
+            return None
 
     def get_user(self, user_id) -> TelegramUser | None:
         try:

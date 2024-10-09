@@ -2,6 +2,8 @@ from rest_framework import serializers
 from rest_framework.serializers import ValidationError as SerializerError
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.settings import api_settings
+from rest_framework.response import Response
+from rest_framework import status
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
 from django.core.exceptions import ValidationError
@@ -9,35 +11,52 @@ from django.core.exceptions import ValidationError
 from .models import TelegramUser, GiveAway, Ticket
 
 
-class TelegramUserSerializer(serializers.ModelSerializer):
+class TelegramUserSerializer(serializers.Serializer):
     """Сериализатор для модели TelegramUser"""
 
-    chat_id = serializers.CharField(required=True, write_only=True, max_length=128)
+    def validate(self, request):
+        data = request.data
+        hash = data.get("hash")
+        user = data.get("user")
+        auth_date = data.get("auth_date")
+        telegram_id = user.get("telegram_id")
 
-    class Meta:
-        model = TelegramUser
-        fields = ['telegram_id', 'first_name', 'last_name', 'chat_id']
+        if not hash:
+            raise serializers.ValidationError("Authentication failed")
 
-
-class UserLoginSerializer(serializers.ModelSerializer):
-
-    telegram_id = serializers.CharField(max_length=32, required=True)
-    chat_id = serializers.CharField(required=True, write_only=True, max_length=128)
-
-    def validate(self, attrs):
         try:
-            user = authenticate(self.context["request"], **attrs)
-            refresh = RefreshToken.for_user(user)
+            user = TelegramUser.objects.get(telegram_id=telegram_id)
+        except TelegramUser.DoesNotExist:
+            raise serializers.ValidationError("User not found")
 
-            if api_settings.UPDATE_LAST_LOGIN:
-                update_last_login(None, user)
+        refresh = RefreshToken.for_user(user)
+        access = refresh.access_token
 
-            return {
-                "refresh": str(refresh),
-                "access": str(refresh.access_token)
-            }
-        except ValidationError as error:
-            raise SerializerError(error.message) from error
+        return {
+            "refresh_token": str(refresh),
+            "access_token": str(access),
+        }
+
+
+# class UserLoginSerializer(serializers.ModelSerializer):
+#
+#     telegram_id = serializers.CharField(max_length=32, required=True)
+#     chat_id = serializers.CharField(required=True, write_only=True, max_length=128)
+#
+#     def validate(self, attrs):
+#         try:
+#             user = authenticate(self.context["request"], **attrs)
+#             refresh = RefreshToken.for_user(user)
+#
+#             if api_settings.UPDATE_LAST_LOGIN:
+#                 update_last_login(None, user)
+#
+#             return {
+#                 "refresh": str(refresh),
+#                 "access": str(refresh.access_token)
+#             }
+#         except ValidationError as error:
+#             raise SerializerError(error.message) from error
 
 
 class GiveAwaySerializer(serializers.ModelSerializer):

@@ -1,60 +1,32 @@
-import json
-from urllib.parse import unquote_plus
-import hmac
-import hashlib
-
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.conf import settings
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render
+from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 
 from .models import TelegramUser, GiveAway, Ticket
 from .serializers import TelegramUserSerializer, GiveAwaySerializer, TicketSerializer
 
-from drf_spectacular.utils import (
-    # OpenApiParameter,
-    extend_schema,
-    extend_schema_view,
-)
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
-class TelegramAuthView(APIView):
+@extend_schema(tags=[_("Пользователи")], methods=["POST"], summary=_("Авторизация телеграм пользователя"))
+class TelegramAuthView(TokenObtainPairView):
+
+    permission_classes = (AllowAny,)
+    serializer_class = TelegramUserSerializer
+
     def post(self, request):
-        data = request.data
-        print(data)
-        hash = data.get("hash")
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        response_data = serializer.validated_data
+        return Response(response_data, status=status.HTTP_200_OK)
 
-        if not hash:
-            return Response({'status': 'error', 'message': 'Authentication failed'},
-                            status=status.HTTP_401_UNAUTHORIZED)
-
-        # Логика для проверки данных
-        user_data = data.get("user")
-        user, created = TelegramUser.objects.get_or_create(telegram_id=user_data['id'])
-        user.first_name = user_data.get("first_name", "")
-        user.last_name = user_data.get("last_name", "")
-        user.chat_id = user_data.get("chat_id", "")
-        user.save()
-
-        # Генерируем токен
-        refresh = RefreshToken.for_user(user)
-
-        return Response({
-            'status': 'ok',
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }, status=status.HTTP_200_OK)
-
-
-def create_jwt_token(user):
-    # Здесь будет ваша логика генерации токена
-    pass
 
 @extend_schema(
     tags=["TelegramUsers"],

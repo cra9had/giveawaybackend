@@ -7,13 +7,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         telegram_id = 7777777
-        chat_id = "7777"
         password = "root"
 
         try:
             TelegramUser.objects.create_superuser(
                 telegram_id=telegram_id,
-                chat_id=chat_id,
                 password=password
             )
             self.stdout.write(self.style.SUCCESS(
