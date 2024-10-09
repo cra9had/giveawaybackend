@@ -124,18 +124,6 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
-    "UPDATE_LAST_LOGIN": False,
-
-    "ALGORITHM": "HS256",
-    "SIGNING_KEY": SECRET_KEY,
-
-    "AUTH_HEADER_TYPES": ("Bearer",),
-    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
-    "USER_ID_FIELD": "telegram_id",
-    "USER_ID_CLAIM": "telegram_id",
-
-    "TOKEN_OBTAIN_SERIALIZER": "webapp.serializers.UserLoginSerializer",
-    "TOKEN_REFRESH_SERIALIZER": "webapp.serializers.UserLoginSerializer"
 }
 
 

@@ -6,7 +6,7 @@ class TelegramUserManager(BaseUserManager):
 
     use_in_migrations = True
 
-    def create_user(self, telegram_id: int, chat_id: str, username=None, **extra_fields):
+    def create_user(self, telegram_id: int, username=None, **extra_fields):
 
         extra_fields.setdefault("is_active", True)
 
@@ -15,14 +15,13 @@ class TelegramUserManager(BaseUserManager):
 
         telegram_user = self.model(
             telegram_id=telegram_id,
-            chat_id=chat_id,
             username=username,
             **extra_fields
         )
         telegram_user.save(using=self._db)
         return telegram_user
 
-    def create_superuser(self, telegram_id: int, chat_id: str, password: str, username=None, **extra_fields):
+    def create_superuser(self, telegram_id: int, password: str, username=None, **extra_fields):
 
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_staff", True)
@@ -33,7 +32,6 @@ class TelegramUserManager(BaseUserManager):
 
         user = self.create_user(
             telegram_id=telegram_id,
-            chat_id=chat_id,
             username=username,
             **extra_fields,
         )
