@@ -97,7 +97,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTHENTICATION_BACKENDS = ("webapp.backends.TelegramAuthBackend",)
+AUTHENTICATION_BACKENDS = (
+    "webapp.backends.TelegramAuthBackend",
+    'django.contrib.auth.backends.ModelBackend',
+)
+
 AUTH_USER_MODEL = "webapp.TelegramUser"
 
 LANGUAGE_CODE = 'en-us'

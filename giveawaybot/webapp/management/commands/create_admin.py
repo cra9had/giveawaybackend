@@ -3,15 +3,20 @@ from webapp.models import TelegramUser
 
 
 class Command(BaseCommand):
-    help = "Create user with admin permissions for project development."
+    help = "Create a superuser for the Telegram user model."
 
     def handle(self, *args, **kwargs):
+        telegram_id = 7777777
+        chat_id = "7777"
+        password = "root"
+
         try:
             TelegramUser.objects.create_superuser(
-                telegram_id="admin@give.local",
-                chat_id="2",
-                password="root"
+                telegram_id=telegram_id,
+                chat_id=chat_id,
+                password=password
             )
-            print("Superuser Created Successfully")
-        except Exception as err:
-            print(err)
+            self.stdout.write(self.style.SUCCESS(
+                "Суперпользователь успешно создан.\nДанные для входа\nLogin: 7777777\nPassword: root"))
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"Ошибка при создании суперпользователя: {e}"))
