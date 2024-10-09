@@ -22,7 +22,7 @@ class TelegramAuthView(TokenObtainPairView):
     serializer_class = TelegramUserSerializer
 
     def post(self, request):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         response_data = serializer.validated_data
         return Response(response_data, status=status.HTTP_200_OK)

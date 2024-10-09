@@ -6,17 +6,16 @@ from .manager import TelegramUserManager
 
 class TelegramUser(AbstractUser):
     """Модель Telegram пользователя"""
-
+    username = None
     USERNAME_FIELD = "telegram_id"
-    REQUIRED_FIELDS = ["first_name"]
+    REQUIRED_FIELDS = []
 
     objects = TelegramUserManager()
 
-    username = models.CharField(max_length=255, unique=True, blank=False, null=False)
-    telegram_id = models.BigIntegerField(unique=True)
-    is_bot = models.BooleanField(default=False)
-    first_name = models.CharField(max_length=128)
-    last_name = models.CharField(max_length=128)
+    telegram_id = models.BigIntegerField(unique=True, verbose_name="Телеграм ID")
+    is_bot = models.BooleanField(default=False, verbose_name="Бот?")
+    telegram_username = models.CharField(max_length=255, verbose_name="телеграм Username", null=True, blank=True)
+    first_name = models.CharField(max_length=128, null=True, blank=True, verbose_name="Имя пользователь телеграм")
 
     def __str__(self):
         return f"Telegram user, id: {self.telegram_id}"
