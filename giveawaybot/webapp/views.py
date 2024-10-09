@@ -12,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from .models import TelegramUser, GiveAway, Ticket
 from .serializers import TelegramUserSerializer, GiveAwaySerializer, TicketSerializer
 
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import extend_schema
 
 
 @extend_schema(tags=[_("Пользователи")], methods=["POST"], summary=_("Авторизация телеграм пользователя"))

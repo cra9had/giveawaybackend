@@ -1,4 +1,4 @@
-from rest_framework.exceptions import AuthenticationFailed
+from django.contrib.auth import get_user_model
 from rest_framework.authentication import BaseAuthentication
 
 from .models import TelegramUser
@@ -17,7 +17,12 @@ class TelegramAuthBackend(BaseAuthentication):
             telegram_user = TelegramUser.objects.get(telegram_id=telegram_id)
             return telegram_user, None
         except TelegramUser.DoesNotExist:
-            return None
+            UserModel = get_user_model()
+            try:
+                telegram_user = TelegramUser.objects.create_user(telegram_id=telegram_id)
+                return telegram_user, None
+            except Exception as e:
+                return None
 
     def get_user(self, user_id) -> TelegramUser | None:
         try:
