@@ -6,7 +6,7 @@ class Command(BaseCommand):
     help = "Create a superuser for the Telegram user model."
 
     def handle(self, *args, **kwargs):
-        telegram_id = 7777777
+        telegram_id = 77777779
         password = "root"
 
         try:
@@ -15,6 +15,6 @@ class Command(BaseCommand):
                 password=password
             )
             self.stdout.write(self.style.SUCCESS(
-                "Суперпользователь успешно создан.\nДанные для входа\nLogin: 7777777\nPassword: root"))
+                f"Суперпользователь успешно создан.\nДанные для входа\nLogin: {telegram_id}\nPassword: {password}"))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Ошибка при создании суперпользователя: {e}"))

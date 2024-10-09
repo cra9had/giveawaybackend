@@ -27,15 +27,7 @@ class TelegramAuthView(TokenObtainPairView):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-@extend_schema(
-    tags=["TelegramUsers"],
-    methods=["GET"],
-)
-@extend_schema_view(
-    post=extend_schema(
-        summary="TelegramUsers",
-    ),
-)
+@extend_schema(tags=[_("TelegramUsers")], methods=["GET"], summary=_("TelegramUsers"))
 class TelegramUserViewSet(viewsets.ModelViewSet):
     queryset = TelegramUser.objects.all()
     serializer_class = TelegramUserSerializer
@@ -43,15 +35,7 @@ class TelegramUserViewSet(viewsets.ModelViewSet):
     http_method_names = ["get"]
 
 
-@extend_schema(
-    tags=["Giveaway"],
-    methods=["POST", "GET"],
-)
-@extend_schema_view(
-    post=extend_schema(
-        summary="Giveaway",
-    ),
-)
+@extend_schema(tags=[_("Giveaway")], methods=["POST", "GET"], summary=_("Giveaway"))
 class GiveAwayViewSet(viewsets.ModelViewSet):
     queryset = GiveAway.objects.all()
     serializer_class = GiveAwaySerializer
@@ -66,15 +50,7 @@ class GiveAwayViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
-@extend_schema(
-    tags=["Ticket"],
-    methods=["POST"],
-)
-@extend_schema_view(
-    post=extend_schema(
-        summary="Ticket",
-    ),
-)
+@extend_schema(tags=[_("Ticket")], methods=["POST"], summary=_("Ticket"))
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
