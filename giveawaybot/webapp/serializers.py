@@ -10,7 +10,7 @@ class TelegramUserSerializer(serializers.Serializer):
     def validate(self, _):
         data = self.context.get('request').data
         hash = data.get("hash")
-        user = data.get("user")
+        user = data.get("user", {})
         auth_date = data.get("auth_date")
         telegram_id = user.get("id")
 

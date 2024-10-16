@@ -34,7 +34,7 @@ class GiveAway(models.Model):
         ('end', 'Закончен'),
     ]
 
-    chat_id = models.CharField(max_length=128)
+    chat_id = models.BigIntegerField(verbose_name="ID канала")
     title = models.CharField(verbose_name="Название", max_length=100)
     description = models.CharField(verbose_name="Описание", max_length=254)
     image = models.ImageField(verbose_name="Изображение", upload_to="images/%Y/%m/", blank=True, null=True)
