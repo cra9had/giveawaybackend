@@ -1,4 +1,4 @@
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,12 +16,12 @@ from drf_spectacular.utils import extend_schema
 
 
 @extend_schema(tags=[_("Пользователи")], methods=["POST"], summary=_("Авторизация телеграм пользователя"))
-class TelegramAuthView(TokenObtainPairView):
+class TelegramAuthView(ObtainAuthToken):
 
     permission_classes = (AllowAny,)
     serializer_class = TelegramUserSerializer
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         response_data = serializer.validated_data

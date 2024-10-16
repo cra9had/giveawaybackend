@@ -6,7 +6,7 @@ class Command(BaseCommand):
     help = "Create a superuser for the Telegram user model."
 
     def handle(self, *args, **kwargs):
-        telegram_id = 77777779
+        telegram_id = 7777777
         password = "root"
 
         try:

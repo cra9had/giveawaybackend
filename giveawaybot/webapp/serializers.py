@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.authtoken.models import Token
 
 from .models import TelegramUser, GiveAway, Ticket
 
@@ -16,20 +16,15 @@ class TelegramUserSerializer(serializers.Serializer):
 
         if not hash:
             raise serializers.ValidationError("Authentication failed")
-        print(telegram_id)
 
         try:
             user, created = TelegramUser.objects.get_or_create(telegram_id=telegram_id)
+            token, created = Token.objects.get_or_create(user=user)
         except Exception as e:
             raise serializers.ValidationError(f"User creation or retrieval failed, {e}")
 
-        print(user)
-        refresh = RefreshToken.for_user(user)
-        access = refresh.access_token
-
         return {
-            "refresh_token": str(refresh),
-            "access_token": str(access),
+            "token": str(token),
         }
 
 
@@ -40,6 +35,7 @@ class GiveAwaySerializer(serializers.ModelSerializer):
     class Meta:
         model = GiveAway
         fields = (
+            "id",
             "chat_id",
             "title",
             "description",
