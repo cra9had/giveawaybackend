@@ -28,9 +28,29 @@ class TelegramUserSerializer(serializers.Serializer):
         }
 
 
+class ParticipantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TelegramUser
+        fields = ("telegram_username", "first_name", "")
+
+
+class TicketSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Ticket"""
+    create_date = serializers.DateTimeField(format="%d.%m.%Y, %H:%M")
+
+    class Meta:
+        model = Ticket
+        fields = ("giveaway", "participant", "create_date", "number_ticket", "is_winner", "position")
+
+
 class GiveAwaySerializer(serializers.ModelSerializer):
     """Сериализатор для модели GiveAway"""
     invite_link = serializers.SerializerMethodField()
+    already_joined = serializers.SerializerMethodField()
+    is_winner = serializers.SerializerMethodField()
+    tickets = TicketSerializer(many=True, read_only=True)
+    winners_tickets = TicketSerializer(many=True, read_only=True)
+    end_datetime = serializers.DateTimeField(format="%d.%m.%Y, %H:%M")
 
     class Meta:
         model = GiveAway
@@ -43,9 +63,16 @@ class GiveAwaySerializer(serializers.ModelSerializer):
             "create_date",
             "end_datetime",
             "winners_count",
+            "status",
             "is_referral_system",
             "referral_invites_count",
             "invite_link",
+            "terms_of_participation",
+            "already_joined",
+            "time_remaining",
+            "tickets",
+            "winners_tickets",
+            "is_winner",
         )
 
     def validate(self, data):
@@ -57,18 +84,35 @@ class GiveAwaySerializer(serializers.ModelSerializer):
             )
         return data
 
+    def get_is_winner(self, obj) -> bool:
+        request = self.context.get('request')
+        if request is None:
+            return False
+        user = request.user
+        return Ticket.objects.filter(giveaway=obj, participant=user, is_winner=True).exists()
+
+    def get_already_joined(self, obj) -> bool:
+        request = self.context.get('request')
+        if request is None:
+            return False
+        user = request.user
+        ticket = Ticket.objects.filter(giveaway=obj, participant=user).first()
+        return ticket is not None
+
     def get_invite_link(self, obj):
         request = self.context.get('request')
         if request is None:
             return None
-        # TODO: Примерный вид сформированной ссылки на созданный розыгрыш
+        # Примерный вид сформированной ссылки на созданный розыгрыш
         return request.build_absolute_uri(f"/giveaways/{obj.pk}/")
 
-
-class TicketSerializer(serializers.ModelSerializer):
-
-    """Сериализатор для модели Ticket"""
-
-    class Meta:
-        model = Ticket
-        fields = ("giveaway", "participant", "create_date", "number_ticket")
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        if request:
+            user = request.user
+            tickets = Ticket.objects.filter(giveaway=instance, participant=user)
+            winners_tickets = Ticket.objects.filter(giveaway=instance, is_winner=True)
+            representation['tickets'] = TicketSerializer(tickets, many=True).data
+            representation['winners_tickets'] = TicketSerializer(winners_tickets, many=True).data
+        return representation

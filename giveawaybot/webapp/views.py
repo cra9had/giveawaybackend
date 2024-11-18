@@ -11,13 +11,12 @@ from django.utils.translation import gettext_lazy as _
 
 from .models import TelegramUser, GiveAway, Ticket
 from .serializers import TelegramUserSerializer, GiveAwaySerializer, TicketSerializer
-
+from .services.checker import check_terms_of_participation
 from drf_spectacular.utils import extend_schema
 
 
 @extend_schema(tags=[_("Пользователи")], methods=["POST"], summary=_("Авторизация телеграм пользователя"))
 class TelegramAuthView(ObtainAuthToken):
-
     permission_classes = (AllowAny,)
     serializer_class = TelegramUserSerializer
 
@@ -40,6 +39,7 @@ class TelegramUserViewSet(viewsets.ModelViewSet):
 class GiveAwayViewSet(viewsets.ModelViewSet):
     queryset = GiveAway.objects.all()
     serializer_class = GiveAwaySerializer
+    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post']
 
     def create(self, request, *args, **kwargs):
@@ -55,22 +55,29 @@ class GiveAwayViewSet(viewsets.ModelViewSet):
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
+    permission_classes = [IsAuthenticated]
     http_method_names = ['post']
 
     @action(detail=False, methods=['post'], url_path='join/(?P<giveaway_id>[^/.]+)')
     def join_giveaway(self, request, giveaway_id=None):
         """Метод для присоединения участника к розыгрышу и выдачи билета"""
         giveaway = get_object_or_404(GiveAway, id=giveaway_id)
-        participant_id = request.data.get("participant_id")
-        participant = get_object_or_404(TelegramUser, id=participant_id)
+        participant = request.user
 
         existing_ticket = Ticket.objects.filter(giveaway=giveaway, participant=participant).first()
         if existing_ticket:
             return Response({"error": "Участник уже присоединился к этому розыгрышу."},
                             status=status.HTTP_400_BAD_REQUEST)
-
-        ticket = Ticket.create_ticket(giveaway=giveaway, participant=participant)
-        return Response({"ticket_number": ticket.number_ticket}, status=status.HTTP_201_CREATED)
+        checker = check_terms_of_participation(participant.jwt_token, giveaway.terms_of_participation)
+        print(checker)
+        if not checker.get("status"):
+            return Response(checker, status=status.HTTP_200_OK)
+        ticket = Ticket.objects.create(
+            giveaway=giveaway,
+            participant=participant,
+        )
+        return Response({"status": True,
+                         "ticket_number": ticket.number_ticket}, status=status.HTTP_201_CREATED)
 
 
 def test_template(request):

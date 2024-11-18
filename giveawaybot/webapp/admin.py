@@ -21,7 +21,7 @@ class TelegramUserAdmin(admin.ModelAdmin):
     list_filter = ("id",)
 
     fieldsets = (
-        (None, {"fields": ("telegram_id", "first_name", "telegram_username")}),
+        (None, {"fields": ("telegram_id", "first_name", "telegram_username", "jwt_token")}),
         (
             "Permissions",
             {"fields": ("is_staff", "is_active", "groups", "user_permissions")},

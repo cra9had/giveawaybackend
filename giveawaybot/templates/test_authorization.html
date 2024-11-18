@@ -315,8 +315,8 @@
         })
         .then(response => response.json())
         .then(data => {
-            if (data.status === 'ok') {
-                alert('Auth working')
+            if (data.access_token) {
+                const access_token = data.access_token
             } else {
                 alert('Auth not working')
             }
