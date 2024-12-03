@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 
 from aiogram import Bot, Dispatcher
 from django.core.management.base import BaseCommand
-
-from ...telegram_bot import router
+from django.conf import settings
+from bot.telegram_bot import router
 
 
 load_dotenv()
@@ -17,9 +17,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         print("Starting telegram bot")
 
-        TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
         dp = Dispatcher()
-        dp_bot = Bot(TOKEN)
+        dp_bot = Bot(settings.TELEGRAM_API_TOKEN)
 
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)

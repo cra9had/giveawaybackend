@@ -1,7 +1,9 @@
+import string
+import random
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
-
+from datetime import datetime
 from .manager import TelegramUserManager
 
 
@@ -46,9 +48,9 @@ class GiveAway(models.Model):
     is_referral_system = models.BooleanField(verbose_name="Реферальная система", default=False)
     referral_invites_count = models.IntegerField(verbose_name="Количество приглашений", null=True, blank=True)
     status = models.CharField(verbose_name="Статус", max_length=20, choices=STATUS_CHOICES, default='created')
-    logs = models.JSONField(default=list)
+    logs = models.JSONField(default=list, blank=True)
 
-    terms_of_participation = models.JSONField(verbose_name="Условия для участия", default=dict(
+    terms_of_participation = models.JSONField(verbose_name="Условия для участия", default=lambda: dict(
         confirm_phone_required=False,
         confirm_email_required=False,
         deposit=dict(
@@ -64,17 +66,7 @@ class GiveAway(models.Model):
     ))
 
     def time_remaining(self):
-        now = timezone.now()
-        time_left = self.end_datetime - now
-
-        # Если время истекло
-        if time_left.total_seconds() <= 0:
-            return "00:00:00"
-
-        # Преобразуем разницу во времени
-        hours, remainder = divmod(time_left.seconds, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        return f"{hours:02}:{minutes:02}:{seconds:02}"
+        return int(self.end_datetime.timestamp()) if self.end_datetime else None
 
     def add_log(self, log_entry: dict):
         """
@@ -105,9 +97,20 @@ class Ticket(models.Model):
     position = models.IntegerField(verbose_name="Позиция", blank=True, null=True)
 
     def create_ticket(self):
-        """Создание нового билета"""
-        return "!23"
+        """Создание нового билета с уникальным номером"""
+        while True:
+            new_ticket = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
+            if not Ticket.objects.filter(number_ticket=new_ticket, giveaway=self.giveaway).exists():
+                return new_ticket
 
+    def get_ref_param(self):
+        from aiogram.utils.deep_linking import create_deep_link
+
+
+        return create_deep_link(username="",
+                                payload=f'{self.participant.telegram_id}_{self.giveaway.pk}',
+                                link_type="start",
+                                encode=True)
 
     def save(self, *args, **kwargs):
         if not self.pk:    # Object created

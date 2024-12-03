@@ -16,7 +16,7 @@ class TelegramUserSerializer(serializers.Serializer):
 
         if not hash:
             raise serializers.ValidationError("Authentication failed")
-
+        # TODO: remove creation. 400 bad request
         try:
             user, created = TelegramUser.objects.get_or_create(telegram_id=telegram_id)
             token, created = Token.objects.get_or_create(user=user)
@@ -37,10 +37,15 @@ class ParticipantSerializer(serializers.ModelSerializer):
 class TicketSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Ticket"""
     create_date = serializers.DateTimeField(format="%d.%m.%Y, %H:%M")
+    participant_username = serializers.SerializerMethodField()
 
     class Meta:
         model = Ticket
-        fields = ("giveaway", "participant", "create_date", "number_ticket", "is_winner", "position")
+        fields = ("giveaway", "participant_username", "create_date", "number_ticket", "is_winner", "position")
+
+    def get_participant_username(self, obj):
+        # Safely retrieve `username` from the related `participant`
+        return obj.participant.telegram_username if obj.participant else None
 
 
 class GiveAwaySerializer(serializers.ModelSerializer):
@@ -48,6 +53,7 @@ class GiveAwaySerializer(serializers.ModelSerializer):
     invite_link = serializers.SerializerMethodField()
     already_joined = serializers.SerializerMethodField()
     is_winner = serializers.SerializerMethodField()
+    total_participants = serializers.SerializerMethodField()
     tickets = TicketSerializer(many=True, read_only=True)
     winners_tickets = TicketSerializer(many=True, read_only=True)
     end_datetime = serializers.DateTimeField(format="%d.%m.%Y, %H:%M")
@@ -73,6 +79,8 @@ class GiveAwaySerializer(serializers.ModelSerializer):
             "tickets",
             "winners_tickets",
             "is_winner",
+            "total_participants",
+            "logs",
         )
 
     def validate(self, data):
@@ -83,6 +91,14 @@ class GiveAwaySerializer(serializers.ModelSerializer):
                 "пригласить участник для получения билета розыгрыша."
             )
         return data
+
+    def get_total_participants(self, obj) -> int:
+        return (
+        Ticket.objects.filter(giveaway=obj)
+        .values('participant')  # Group by participant
+        .distinct()             # Ensure distinct participants
+        .count()
+    )
 
     def get_is_winner(self, obj) -> bool:
         request = self.context.get('request')

@@ -29,6 +29,8 @@ INSTALLED_APPS = [
 
     'bot',
     'webapp',
+
+    'celery'
 ]
 
 MIDDLEWARE = [
@@ -107,7 +109,7 @@ AUTH_USER_MODEL = "webapp.TelegramUser"
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Karachi'
 
 USE_I18N = True
 
@@ -131,8 +133,11 @@ SPECTACULAR_SETTINGS = {
     "REDOC_DIST": "SIDECAR",
 }
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+CELERY_BROKER_URL = 'redis://localhost:6379/1'  # Redis broker
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'  # Redis backend
+
+# Optional: Timezone configuration
+CELERY_TIMEZONE = 'Asia/Karachi'
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "collected_static"
