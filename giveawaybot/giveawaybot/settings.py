@@ -161,7 +161,10 @@ CORS_ALLOW_METHODS = [
 ]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+SAVE_GIVEAWAY_MEDIA_TO = "uploads"
+DOMAIN = "https://pleasant-gnu-amazing.ngrok-free.app"
+DOMAIN_FRONTEND = "https://f5aa-171-6-236-151.ngrok-free.app"
 
-TELEGRAM_API_TOKEN = "6816633334:AAEgUsxvavRzoVcIcZI_guesK-h_6NCJ5Vs"
+TELEGRAM_API_TOKEN = "6675414542:AAFEQOtTy6ydqAgittx7msQIwAlAZt6zZXM"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

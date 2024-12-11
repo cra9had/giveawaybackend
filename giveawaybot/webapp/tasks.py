@@ -1,9 +1,18 @@
 import random
+
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 from django.db import transaction
 from celery import shared_task
 from django.utils import timezone
 from .models import GiveAway, Ticket
 from .services.checker import check_terms_of_participation
+from aiogram import Bot
+from django.conf import settings
+
+from bot.keyboards import get_join_giveaway_keyboard
+
+bot = Bot(token=settings.TELEGRAM_API_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
 
 @shared_task
@@ -105,6 +114,36 @@ def finalize_giveaway(giveaway_id: int):
         giveaway.status = "end"
         giveaway.end_datetime = timezone.now()
         giveaway.save()
+    winners = giveaway.get_winners()
+    winners_text = ""
+    if winners:
+        winners_text = "Победители розыгрыша:\n"
+        for winner in winners:
+            winners_text += f"{winner.position}. <a href='t.me/{winner.participant.username}'>{winner.participant.first_name} - {winner.number_ticket}</a>\n"
+    import asyncio
+
+    text = f"""
+{giveaway.description}
+
+Участников: <b>{giveaway.get_total_participants()}</b>
+Призовых мест: <b>{giveaway.winners_count}</b>
+Дата розыгрыша: <b>{giveaway.end_datetime}</b>
+
+{'Победителей нет, так как никто не принял участие в розыгрыше.' if len(winners) == 0 else ''}{winners_text}
+"""
+    chat_id = giveaway.channel.chat_id
+    message_id = giveaway.message_id
+    giveaway_pk = giveaway.pk
+
+
+    async def edit_message():
+        me = await bot.get_me()
+        await bot.edit_message_text(chat_id=chat_id,
+                                    message_id=message_id, text=text,
+                                    reply_markup=get_join_giveaway_keyboard(giveaway_pk, me.username, results=True))
+
+    # Run the asyncio event loop for the Aiogram bot
+    asyncio.run(edit_message())
 
 
 def start_giveaway(giveaway_id: int):

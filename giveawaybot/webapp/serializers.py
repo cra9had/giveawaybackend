@@ -56,6 +56,7 @@ class GiveAwaySerializer(serializers.ModelSerializer):
     total_participants = serializers.SerializerMethodField()
     tickets = TicketSerializer(many=True, read_only=True)
     winners_tickets = TicketSerializer(many=True, read_only=True)
+    chat_id = serializers.SerializerMethodField()
     end_datetime = serializers.DateTimeField(format="%d.%m.%Y, %H:%M")
 
     class Meta:
@@ -92,13 +93,11 @@ class GiveAwaySerializer(serializers.ModelSerializer):
             )
         return data
 
+    def get_chat_id(self, obj) -> int:
+        return obj.channel.chat_id
+
     def get_total_participants(self, obj) -> int:
-        return (
-        Ticket.objects.filter(giveaway=obj)
-        .values('participant')  # Group by participant
-        .distinct()             # Ensure distinct participants
-        .count()
-    )
+        return obj.get_total_participants()
 
     def get_is_winner(self, obj) -> bool:
         request = self.context.get('request')
