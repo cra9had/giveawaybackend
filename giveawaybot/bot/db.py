@@ -37,7 +37,7 @@ async def create_channel(chat_id: int, owner_telegram_id: int, channel_name: str
 
 
 async def create_giveaway(
-    channel_pk: int, title: str, description: str, end_datetime: datetime.datetime, winners_count: int,
+    channel_pk: int, title: str, description: str, end_datetime: datetime, winners_count: int,
     is_referral_system: bool, referral_invites_count: int = 0, terms_of_participation: dict = {},
     image: Optional[str] = None, show_image_above_text: bool = False,
 ):
