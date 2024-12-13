@@ -29,9 +29,13 @@ class TelegramUserSerializer(serializers.Serializer):
 
 
 class ParticipantSerializer(serializers.ModelSerializer):
+    telegram_username = serializers.SerializerMethodField()
     class Meta:
         model = TelegramUser
-        fields = ("telegram_username", "first_name", "")
+        fields = ("telegram_username", "first_name")
+
+    def get_telegram_username(self, obj):
+        return obj.blured_username
 
 
 class TicketSerializer(serializers.ModelSerializer):
