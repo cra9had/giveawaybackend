@@ -59,12 +59,12 @@ def finalize_giveaway(giveaway_id: int):
             # Выбираем случайного участника
             selected_ticket = random.choice(tickets)
             ticket_user = selected_ticket.participant
-            user_link = f"<a href='https://t.me/{ticket_user.telegram_username}'>{ticket_user.telegram_username}</a>"
+            user_link = f"{ticket_user.blured_username}"
             giveaway.add_log({
                 # "text": f"Выбран билет: {selected_ticket} {user_link}",
                 "type": "select_ticket",
                 "selected_ticket": selected_ticket.number_ticket,
-                "username": ticket_user.telegram_username,
+                "username": ticket_user.blured_username,
             })
 
             # Проверяем, соответствует ли участник условиям
