@@ -49,7 +49,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
     def get_participant_username(self, obj):
         # Safely retrieve `username` from the related `participant`
-        return obj.participant.telegram_username if obj.participant else None
+        return obj.participant.blured_username if obj.participant else None
 
 
 class GiveAwaySerializer(serializers.ModelSerializer):
