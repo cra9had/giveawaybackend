@@ -55,6 +55,7 @@ async def create_giveaway(
         winners_count=winners_count,
         is_referral_system=is_referral_system,
         referral_invites_count=referral_invites_count,
+        terms_of_participation=terms_of_participation,
         image=image,
         show_media_above_text=show_image_above_text,
     )

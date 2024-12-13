@@ -25,7 +25,7 @@ async def start_giveaway(bot: Bot, giveaway: GiveAway):
 
 Участников: <b>{giveaway.get_total_participants()}</b>
 Призовых мест: <b>{giveaway.winners_count}</b>
-Дата розыгрыша: <b>{giveaway.end_datetime}</b>
+Дата розыгрыша: <b>{giveaway.formatted_end_datetime}</b>
 """, reply_markup=get_join_giveaway_keyboard(giveaway.pk, me.username)
     )
     giveaway.message_id = message.message_id

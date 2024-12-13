@@ -69,7 +69,6 @@ class TicketViewSet(viewsets.ModelViewSet):
             return Response({"error": "Участник уже присоединился к этому розыгрышу."},
                             status=status.HTTP_400_BAD_REQUEST)
         checker = check_terms_of_participation(participant.jwt_token, giveaway.terms_of_participation)
-        print(checker)
         if not checker.get("status"):
             return Response(checker, status=status.HTTP_200_OK)
         ticket = Ticket.objects.create(

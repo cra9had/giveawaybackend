@@ -119,7 +119,7 @@ def finalize_giveaway(giveaway_id: int):
     if winners:
         winners_text = "Победители розыгрыша:\n"
         for winner in winners:
-            winners_text += f"{winner.position}. {winner.participant.first_name} - {winner.number_ticket}\n"
+            winners_text += f"{winner.position}. @{winner.participant.blured_username} - {winner.number_ticket}\n"
     import asyncio
 
     text = f"""
@@ -127,7 +127,7 @@ def finalize_giveaway(giveaway_id: int):
 
 Участников: <b>{giveaway.get_total_participants()}</b>
 Призовых мест: <b>{giveaway.winners_count}</b>
-Дата розыгрыша: <b>{giveaway.end_datetime}</b>
+Дата розыгрыша: <b>{giveaway.formatted_end_datetime}</b>
 
 {'Победителей нет, так как никто не принял участие в розыгрыше.' if len(winners) == 0 else ''}{winners_text}
 """

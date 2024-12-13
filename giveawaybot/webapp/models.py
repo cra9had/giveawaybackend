@@ -24,6 +24,26 @@ class TelegramUser(AbstractUser):
     jwt_token = models.CharField(max_length=1024, verbose_name="JWT токен lotoclub", null=True, blank=telegram_username)
     is_bot = models.BooleanField(default=False, verbose_name="Бот?")
 
+    @property
+    def blured_username(self):
+        """
+        Replaces three characters in the middle of the given string with asterisks (***).
+
+        Args:
+            s (str): Input string.
+
+        Returns:
+            str: String with three middle characters replaced by ***.
+        """
+        length = len(self.telegram_username)
+        if length <= 3:
+            return '*' * length
+
+        middle_start = (length - 3) // 2
+        middle_end = middle_start + 3
+
+        return self.telegram_username[:middle_start] + '***' + self.telegram_username[middle_end:]
+
     def __str__(self):
         return f"Telegram user, id: {self.telegram_id}"
 
@@ -83,6 +103,10 @@ class GiveAway(models.Model):
             sum=0
         )
     ))
+
+    @property
+    def formatted_end_datetime(self):
+        return self.end_datetime.strftime('%H:%M, %d.%m.%Y (Астана)')
 
     def get_winners(self) -> QuerySet:
         return self.ticket_set.filter(
