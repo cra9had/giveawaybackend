@@ -16,7 +16,8 @@ from bot.utils import get_current_date_time_string, is_valid_future_datetime, pa
 from bot.keyboards import (get_confirm_description_keyboard, get_with_media_keyboard,
                            get_preview_giveaway_keyboard, get_use_referral_system_keyboard,
                            referral_counter_keyboard, SetReferralCounter, choice_channel_keyboard, SelectChannel,
-                           get_cancel_channel_adding_keyboard, get_recheck_keyboard)
+                           get_cancel_channel_adding_keyboard, get_recheck_keyboard,
+                           get_terms_of_participation_panel_keyboard, EditTermsOfParticipation)
 
 
 router = Router()
@@ -242,6 +243,77 @@ async def set_referral_counter(call: CallbackQuery, state: FSMContext, callback_
         "referral_amount": amount,
     })
     await call.message.delete()
+    await terms_of_participation_panel(call.message, state)
+
+
+@router.callback_query(F.data == "dont_use_referral_system")
+async def dont_use_referral_system(call: CallbackQuery, state: FSMContext):
+    await terms_of_participation_panel(call.message, state)
+
+
+async def terms_of_participation_panel(message: Message, state: FSMContext):
+    data = await state.get_data()
+    terms_of_participation = data.get("terms_of_participation", {
+        "confirm_phone_required": False,
+        "confirm_email_required": False,
+        "deposit": {
+            "required": False,
+            "sum": 0
+        },
+        "bet": {
+            "required": False,
+            "sum": 0
+        }
+    })
+    if not data.get("terms_of_participation", None):
+        await state.update_data(terms_of_participation=terms_of_participation)
+    await message.answer("Выберите условия, чтобы стать участником розыгрыша",
+                         reply_markup=get_terms_of_participation_panel_keyboard(terms_of_participation))
+
+
+@router.callback_query(EditTermsOfParticipation.filter())
+async def edit_terms_of_participation(call: CallbackQuery, state: FSMContext, callback_data: EditTermsOfParticipation):
+    data = await state.get_data()
+    terms_of_participation = data.get("terms_of_participation")
+    await call.message.delete()
+    if callback_data.name == "deposit":
+        await state.set_state(GiveawayCreation.set_deposit_sum)
+        await call.message.answer("Введите минимальную сумму депозита (0, чтобы отменить)")
+    elif callback_data.name == "bet":
+        await state.set_state(GiveawayCreation.set_bet_sum)
+        await call.message.answer("Введите минимальную сумму ставки (0, чтобы отменить)")
+    else:
+        terms_of_participation.update({
+            callback_data.name: not terms_of_participation.get(callback_data.name),
+        })
+        await state.update_data(terms_of_participation=terms_of_participation)
+        await terms_of_participation_panel(call.message, state)
+
+
+@router.message(GiveawayCreation.set_deposit_sum)
+async def set_deposit_sum(message: Message, state: FSMContext):
+    if not message.text.isdigit():
+        return await message.answer("Пришлите число!")
+    data = await state.get_data()
+    terms_of_participation = data.get("terms_of_participation")
+    terms_of_participation["deposit"]["sum"] = int(message.text)
+    await state.update_data(terms_of_participation=terms_of_participation)
+    await terms_of_participation_panel(message, state)
+
+
+@router.message(GiveawayCreation.set_bet_sum)
+async def set_bet_sum(message: Message, state: FSMContext):
+    if not message.text.isdigit():
+        return await message.answer("Пришлите число!")
+    data = await state.get_data()
+    terms_of_participation = data.get("terms_of_participation")
+    terms_of_participation["bet"]["sum"] = int(message.text)
+    await state.update_data(terms_of_participation=terms_of_participation)
+    await terms_of_participation_panel(message, state)
+
+
+@router.callback_query(F.data == "confirm_terms")
+async def confirm_terms(call: CallbackQuery, state: FSMContext):
     await giveaway_created(call.message, state)
 
 
@@ -333,8 +405,10 @@ async def recheck_confirmed(call: CallbackQuery, state: FSMContext):
         winners_count=data.get("participants_number"),
         is_referral_system=data.get("use_referral_system"),
         referral_invites_count=data.get("referral_amount", 0),
+        terms_of_participation=data.get("terms_of_participation"),
         image=os.path.join(settings.MEDIA_ROOT, data.get("media_path", "")),
         show_image_above_text=data.get("show_media_above_text", False),
+
     )
     await start_giveaway(call.bot, giveaway)
     await call.message.answer("Розыгрыш успешно запушен!")

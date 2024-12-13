@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Literal, Union, Optional
 
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import WebAppInfo
@@ -13,6 +13,10 @@ class SetReferralCounter(CallbackData, prefix="set-referral-counter"):
 
 class SelectChannel(CallbackData, prefix="select-channel"):
     channel_pk: int
+
+
+class EditTermsOfParticipation(CallbackData, prefix="edit-terms-of-participation"):
+    name: Literal['deposit', 'bet', 'confirm_email_required', 'confirm_phone_required']
 
 
 def get_confirm_description_keyboard():
@@ -85,4 +89,30 @@ def get_join_giveaway_keyboard(giveaway_pk: int, username: str, results: bool = 
     builder = InlineKeyboardBuilder()
     builder.button(text="Участвовать" if not results else "Результаты",
                    url=f"https://t.me/{username}?startapp={giveaway_pk}")
+    return builder.as_markup()
+
+
+def get_terms_of_participation_panel_keyboard(terms_of_participation: dict):
+    builder = InlineKeyboardBuilder()
+    deposit_sum = terms_of_participation.get("deposit").get("sum")
+    bet_sum = terms_of_participation.get("bet").get("sum")
+    confirm_phone_required = terms_of_participation.get("confirm_phone_required")
+    confirm_email_required = terms_of_participation.get("confirm_email_required")
+
+    builder.button(text=f"Пополнил счет на сумму >= {deposit_sum}", callback_data=EditTermsOfParticipation(
+        name="deposit"
+    ).pack())
+    builder.button(text=f"Сделал bet на сумму >= {bet_sum}", callback_data=EditTermsOfParticipation(
+        name="bet"
+    ).pack())
+    builder.button(text=f"Подтвердил номер телефона{' ☑️' if confirm_email_required else ' ❌'}",
+                   callback_data=EditTermsOfParticipation(
+        name="confirm_email_required"
+    ).pack())
+    builder.button(text=f"Подтвердил почту{' ☑️' if confirm_phone_required else ' ❌'}",
+                   callback_data=EditTermsOfParticipation(
+        name="confirm_phone_required",
+    ).pack())
+    builder.button(text="Подтвердить", callback_data="confirm_terms")
+    builder.adjust(1)
     return builder.as_markup()

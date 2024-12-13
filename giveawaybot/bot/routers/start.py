@@ -23,7 +23,8 @@ async def command_start_handler(message: Message, command: CommandObject):
     args = command.args
     jwt_token_arg = args
     try:
-        user = await create_user_if_not_exist(message.chat.id, message.chat.username, jwt_token_arg)
+        user = await create_user_if_not_exist(message.chat.id, message.chat.username,
+                                              message.chat.first_name, jwt_token_arg)
     except InvalidJWT:
         return await message.answer("Invalid JWT")
     await message.answer("Вас приветствует GiveAway Bot")

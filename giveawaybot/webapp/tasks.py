@@ -119,7 +119,7 @@ def finalize_giveaway(giveaway_id: int):
     if winners:
         winners_text = "Победители розыгрыша:\n"
         for winner in winners:
-            winners_text += f"{winner.position}. <a href='t.me/{winner.participant.username}'>{winner.participant.first_name} - {winner.number_ticket}</a>\n"
+            winners_text += f"{winner.position}. {winner.participant.first_name} - {winner.number_ticket}\n"
     import asyncio
 
     text = f"""

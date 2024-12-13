@@ -10,7 +10,7 @@ from webapp.models import TelegramUser, TelegramChannel, GiveAway
 from .utils import is_valid_jwt_format, InvalidJWT
 
 
-async def create_user_if_not_exist(telegram_id: int, telegram_username: str, jwt_token: str):
+async def create_user_if_not_exist(telegram_id: int, telegram_username: str, first_name: str, jwt_token: str):
     user = TelegramUser.objects.filter(telegram_id=telegram_id).exists()
     if not user:
         if not is_valid_jwt_format(jwt_token):
@@ -18,6 +18,7 @@ async def create_user_if_not_exist(telegram_id: int, telegram_username: str, jwt
 
         user = TelegramUser.objects.create(telegram_id=telegram_id,
                                            telegram_username=telegram_username,
+                                           first_name=first_name,
                                            jwt_token=jwt_token)
     return user
 
@@ -37,10 +38,15 @@ async def create_channel(chat_id: int, owner_telegram_id: int, channel_name: str
 
 async def create_giveaway(
     channel_pk: int, title: str, description: str, end_datetime: datetime.datetime, winners_count: int,
-    is_referral_system: bool, referral_invites_count: int = 0, image: Optional[str] = None,
-    show_image_above_text: bool = False,
+    is_referral_system: bool, referral_invites_count: int = 0, terms_of_participation: dict = {},
+    image: Optional[str] = None, show_image_above_text: bool = False,
 ):
     channel = TelegramChannel.objects.get(pk=channel_pk)
+    today = datetime.now().strftime('%Y-%m-%d')
+
+    if terms_of_participation:
+        terms_of_participation["deposit"]["starting_period"] = today
+        terms_of_participation["bet"]["starting_period"] = today
     return GiveAway.objects.create(
         channel=channel,
         title=title,

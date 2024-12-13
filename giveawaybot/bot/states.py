@@ -7,6 +7,8 @@ class GiveawayCreation(StatesGroup):
     giveaway_description = State()
     giveaway_media = State()
     giveaway_end_datetime = State()
+    set_bet_sum = State()
+    set_deposit_sum = State()
     adding_channel = State()
 
 
