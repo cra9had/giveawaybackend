@@ -1,5 +1,5 @@
 import random
-
+from asyncio import get_event_loop, new_event_loop, set_event_loop
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from django.db import transaction
@@ -13,6 +13,16 @@ from django.conf import settings
 from bot.keyboards import get_join_giveaway_keyboard
 
 bot = Bot(token=settings.TELEGRAM_API_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+
+
+async def edit_message(bot, chat_id, message_id, text, giveaway_pk):
+    me = await bot.get_me()
+    await bot.edit_message_text(
+        chat_id=chat_id,
+        message_id=message_id,
+        text=text,
+        reply_markup=get_join_giveaway_keyboard(giveaway_pk, me.username, results=True),
+    )
 
 
 @shared_task
@@ -120,7 +130,6 @@ def finalize_giveaway(giveaway_id: int):
         winners_text = "Победители розыгрыша:\n"
         for winner in winners:
             winners_text += f"{winner.position}. @{winner.participant.blured_username} - {winner.number_ticket}\n"
-    import asyncio
 
     text = f"""
 {giveaway.description}
@@ -135,15 +144,10 @@ def finalize_giveaway(giveaway_id: int):
     message_id = giveaway.message_id
     giveaway_pk = giveaway.pk
 
-
-    async def edit_message():
-        me = await bot.get_me()
-        await bot.edit_message_text(chat_id=chat_id,
-                                    message_id=message_id, text=text,
-                                    reply_markup=get_join_giveaway_keyboard(giveaway_pk, me.username, results=True))
-
-    # Run the asyncio event loop for the Aiogram bot
-    asyncio.run(edit_message())
+    loop = get_event_loop() if get_event_loop().is_running() else new_event_loop()
+    if not loop.is_running():
+        set_event_loop(loop)
+    loop.run_until_complete(edit_message(bot, chat_id, message_id, text, giveaway_pk))
 
 
 def start_giveaway(giveaway_id: int):
