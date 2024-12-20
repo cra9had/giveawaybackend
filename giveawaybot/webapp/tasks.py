@@ -142,7 +142,7 @@ def finalize_giveaway(giveaway_id: int):
     chat_id = giveaway.channel.chat_id
     message_id = giveaway.message_id
     giveaway_pk = giveaway.pk
-    edit_message(chat_id, message_id, text, giveaway_pk)
+    edit_message_sync(chat_id, message_id, text, giveaway_pk)
 
 
 def start_giveaway(giveaway_id: int):
