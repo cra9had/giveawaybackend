@@ -26,6 +26,7 @@ router = Router()
 @router.message(Command("create"))
 async def create_giveaway(message: Message, state: FSMContext):
     await message.answer("Введите количество победителей от 1 до 50 (только число):")
+    await state.clear()
     await state.set_state(GiveawayCreation.participants_number)
 
 
