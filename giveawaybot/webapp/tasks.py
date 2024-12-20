@@ -10,7 +10,7 @@ from .services.checker import check_terms_of_participation
 from telebot import TeleBot
 from django.conf import settings
 
-from services.keyboards import get_join_giveaway_keyboard
+from .services.keyboards import get_join_giveaway_keyboard
 
 
 bot = TeleBot(settings.TELEGRAM_API_TOKEN)
