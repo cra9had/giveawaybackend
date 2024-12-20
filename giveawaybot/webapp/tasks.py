@@ -7,21 +7,19 @@ from celery import shared_task
 from django.utils import timezone
 from .models import GiveAway, Ticket
 from .services.checker import check_terms_of_participation
-from telegram import Bot
+from telebot import TeleBot
 from django.conf import settings
 
 from bot.keyboards import get_join_giveaway_keyboard
 
 
+bot = TeleBot(settings.TELEGRAM_API_TOKEN)
+
+
 def edit_message_sync(chat_id, message_id, text, giveaway_pk):
-    bot = Bot(token=settings.TELEGRAM_API_TOKEN)
-    me = bot.get_me()
-    bot.edit_message_text(
-        chat_id=chat_id,
-        message_id=message_id,
-        text=text,
-        reply_markup=get_join_giveaway_keyboard(giveaway_pk, me.username, results=True),
-    )
+    bot_username = bot.get_me().username  # Synchronous API call
+    reply_markup = get_join_giveaway_keyboard(giveaway_pk, bot_username, results=True)
+    bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text, reply_markup=reply_markup)
 
 
 @shared_task
