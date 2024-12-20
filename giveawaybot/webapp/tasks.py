@@ -7,17 +7,16 @@ from celery import shared_task
 from django.utils import timezone
 from .models import GiveAway, Ticket
 from .services.checker import check_terms_of_participation
-from aiogram import Bot
+from telegram import Bot
 from django.conf import settings
 
 from bot.keyboards import get_join_giveaway_keyboard
 
-bot = Bot(token=settings.TELEGRAM_API_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
-
-async def edit_message(bot, chat_id, message_id, text, giveaway_pk):
-    me = await bot.get_me()
-    await bot.edit_message_text(
+def edit_message_sync(chat_id, message_id, text, giveaway_pk):
+    bot = Bot(token=settings.TELEGRAM_API_TOKEN)
+    me = bot.get_me()
+    bot.edit_message_text(
         chat_id=chat_id,
         message_id=message_id,
         text=text,
@@ -143,11 +142,7 @@ def finalize_giveaway(giveaway_id: int):
     chat_id = giveaway.channel.chat_id
     message_id = giveaway.message_id
     giveaway_pk = giveaway.pk
-
-    loop = get_event_loop() if get_event_loop().is_running() else new_event_loop()
-    if not loop.is_running():
-        set_event_loop(loop)
-    loop.run_until_complete(edit_message(bot, chat_id, message_id, text, giveaway_pk))
+    edit_message(chat_id, message_id, text, giveaway_pk)
 
 
 def start_giveaway(giveaway_id: int):
