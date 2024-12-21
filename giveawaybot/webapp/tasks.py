@@ -1,7 +1,6 @@
 import random
 from asyncio import get_event_loop, new_event_loop, set_event_loop
 from aiogram.client.default import DefaultBotProperties
-from aiogram.enums import ParseMode
 from django.db import transaction
 from celery import shared_task
 from django.utils import timezone
@@ -19,7 +18,7 @@ bot = TeleBot(settings.TELEGRAM_API_TOKEN)
 def edit_message_sync(chat_id, message_id, text, giveaway_pk):
     bot_username = bot.get_me().username  # Synchronous API call
     reply_markup = get_join_giveaway_keyboard(giveaway_pk, bot_username, results=True)
-    bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text, reply_markup=reply_markup)
+    bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=text, reply_markup=reply_markup, parse_mode='HTML')
 
 
 @shared_task
