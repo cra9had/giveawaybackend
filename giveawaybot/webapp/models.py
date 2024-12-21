@@ -106,7 +106,11 @@ class GiveAway(models.Model):
 
     @property
     def formatted_end_datetime(self):
-        return self.end_datetime.strftime('%H:%M, %d.%m.%Y (Астана)')
+        utc_plus_5 = timezone.timedelta(hours=5)
+        # Convert end_datetime to UTC+5
+        local_end_datetime = self.end_datetime + utc_plus_5
+        # Format the datetime
+        return local_end_datetime.strftime('%H:%M, %d.%m.%Y (Астана)')
 
     def get_winners(self) -> QuerySet:
         return self.ticket_set.filter(
